@@ -170,6 +170,7 @@ const cacheGroups = {
 
     /**
      * Do not split platformicons into its own (css) bundle -- keep it in the `sentry` css bundle
+     * TODO: kill platformicons css completely
      */
     test: /[\\/]node_modules[\\/](!platformicons)[\\/]/,
     priority: -10,
@@ -324,10 +325,14 @@ const appConfig = {
   resolve: {
     alias: {
       app: path.join(staticPrefix, 'app'),
+
+      // Aliasing this for getsentry's build, otherwise `less/select2` will not be able
+      // to be resolved
+      less: path.join(staticPrefix, 'less'),
       'app-test': path.join(__dirname, 'tests', 'js'),
       'sentry-locale': path.join(__dirname, 'src', 'sentry', 'locale'),
     },
-    modules: [staticPrefix, 'node_modules'],
+    modules: ['node_modules'],
     extensions: ['.jsx', '.js', '.json', '.ts', '.tsx', '.less'],
   },
   output: {
