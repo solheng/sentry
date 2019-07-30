@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-function arrayIsEqual(arr, other, deep) {
+function arrayIsEqual(arr?: any[], other?: any[], deep?: boolean): boolean {
   // if the other array is a falsy value, return
   if (!arr && !other) {
     return true;
@@ -18,7 +18,7 @@ function arrayIsEqual(arr, other, deep) {
   return arr.every((val, idx) => valueIsEqual(val, other[idx], deep));
 }
 
-export function valueIsEqual(value, other, deep) {
+export function valueIsEqual(value?: any, other?: any, deep?: boolean): boolean {
   if (value === other) {
     return true;
   } else if (_.isArray(value) || _.isArray(other)) {
@@ -33,8 +33,8 @@ export function valueIsEqual(value, other, deep) {
   return false;
 }
 
-function objectMatchesSubset(obj, other, deep) {
-  let k;
+function objectMatchesSubset(obj?: object, other?: object, deep?: boolean): boolean {
+  let k: string | number;
 
   if (obj === other) {
     return true;
@@ -61,21 +61,17 @@ function objectMatchesSubset(obj, other, deep) {
   return true;
 }
 
-// XXX(dcramer): the previous mechanism of using _.map here failed
-// miserably if a param was named 'length'
-export function objectToArray(obj) {
-  const result = [];
-  for (const key in obj) {
-    result.push([key, obj[key]]);
-  }
-  return result;
+export function objectToArray<T>(
+  obj: {[s: string]: T} | ArrayLike<T>
+): Array<[string, T]> {
+  return Object.entries(obj);
 }
 
-export function intcomma(x) {
+export function intcomma(x: object): string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-export function sortArray(arr, score_fn) {
+export function sortArray<T>(arr: Array<T>, score_fn: (entry: T) => string): Array<T> {
   arr.sort((a, b) => {
     const a_score = score_fn(a),
       b_score = score_fn(b);
@@ -94,7 +90,7 @@ export function sortArray(arr, score_fn) {
   return arr;
 }
 
-export function objectIsEmpty(obj) {
+export function objectIsEmpty(obj: object): boolean {
   for (const prop in obj) {
     if (obj.hasOwnProperty(prop)) {
       return false;
@@ -104,22 +100,22 @@ export function objectIsEmpty(obj) {
   return true;
 }
 
-export function trim(str) {
+export function trim(str: string): string {
   return str.replace(/^\s+|\s+$/g, '');
 }
 
 /**
  * Replaces slug special chars with a space
  */
-export function explodeSlug(slug) {
+export function explodeSlug(slug: string): string {
   return trim(slug.replace(/[-_]+/g, ' '));
 }
 
-export function defined(item) {
+export function defined(item: any): boolean {
   return !_.isUndefined(item) && item !== null;
 }
 
-export function nl2br(str) {
+export function nl2br(str: string): string {
   return str.replace(/(?:\r\n|\r|\n)/g, '<br />');
 }
 
@@ -127,7 +123,7 @@ export function nl2br(str) {
  * This function has a critical security impact, make sure to check all usages before changing this function.
  * In some parts of our code we rely on that this only really is a string starting with http(s).
  */
-export function isUrl(str) {
+export function isUrl(str: any): boolean {
   return (
     !!str &&
     _.isString(str) &&
@@ -135,24 +131,24 @@ export function isUrl(str) {
   );
 }
 
-export function escape(str) {
+export function escape(str: string): string {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 }
 
-export function percent(value, totalValue, precise) {
+export function percent(value: number, totalValue: number): number {
   return (value / totalValue) * 100;
 }
 
-export function toTitleCase(str) {
+export function toTitleCase(str: string): string {
   return str.replace(/\w\S*/g, txt => {
     return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
   });
 }
 
-export function formatBytes(bytes) {
+export function formatBytes(bytes: number): string {
   const units = ['KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const thresh = 1024;
   if (bytes < thresh) {
@@ -167,7 +163,7 @@ export function formatBytes(bytes) {
   return bytes.toFixed(1) + ' ' + units[u];
 }
 
-export function getShortVersion(version) {
+export function getShortVersion(version: string): string {
   if (version.length < 12) {
     return version;
   }
@@ -184,29 +180,34 @@ export function getShortVersion(version) {
   return version;
 }
 
-export function parseRepo(repo) {
-  if (!repo) {
-    return repo;
-  } else {
+export function parseRepo<T>(repo: T): T {
+  if (typeof repo === 'string') {
     const re = /(?:github\.com|bitbucket\.org)\/([^\/]+\/[^\/]+)/i;
     const match = repo.match(re);
     const parsedRepo = match ? match[1] : repo;
-    return parsedRepo;
+    return parsedRepo as any;
   }
+
+  return repo;
 }
 
 /**
  * Converts a multi-line textarea input value into an array,
  * eliminating empty lines
  */
-export function extractMultilineFields(value) {
+export function extractMultilineFields(value: string): Array<string> {
   return value
     .split('\n')
     .map(f => trim(f))
     .filter(f => f !== '');
 }
 
-function projectDisplayCompare(a, b) {
+interface Project {
+  isBookmarked: boolean;
+  slug: string;
+}
+
+function projectDisplayCompare(a: Project, b: Project): number {
   if (a.isBookmarked !== b.isBookmarked) {
     return a.isBookmarked ? -1 : 1;
   }
@@ -214,7 +215,7 @@ function projectDisplayCompare(a, b) {
 }
 
 // Sort a list of projects by bookmarkedness, then by id
-export function sortProjects(projects) {
+export function sortProjects(projects: Array<Project>): Array<Project> {
   return projects.sort(projectDisplayCompare);
 }
 
@@ -225,13 +226,21 @@ export const buildTeamId = id => `team:${id}`;
 /**
  * Removes the organization / project scope prefix on feature names.
  */
-export function descopeFeatureName(feature) {
-  return typeof feature.match !== 'function'
-    ? feature
-    : feature.match(/(?:^(?:projects|organizations):)?(.*)/).pop();
+export function descopeFeatureName(feature: string): string {
+  if (typeof feature.match !== 'function') {
+    return feature;
+  }
+
+  const results = feature.match(/(?:^(?:projects|organizations):)?(.*)/);
+
+  if (results) {
+    return results.pop()!;
+  }
+
+  return feature;
 }
 
-export function isWebpackChunkLoadingError(error) {
+export function isWebpackChunkLoadingError(error: Error): boolean {
   return (
     error &&
     typeof error.message === 'string' &&
@@ -239,7 +248,7 @@ export function isWebpackChunkLoadingError(error) {
   );
 }
 
-export function deepFreeze(object) {
+export function deepFreeze<T>(object: T): Readonly<T> {
   // Retrieve the property names defined on object
   const propNames = Object.getOwnPropertyNames(object);
   // Freeze properties before freezing self
@@ -249,5 +258,5 @@ export function deepFreeze(object) {
     object[name] = value && typeof value === 'object' ? deepFreeze(value) : value;
   }
 
-  return Object.freeze(object);
+  return Object.freeze<T>(object);
 }
