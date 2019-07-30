@@ -244,7 +244,7 @@ export function isWebpackChunkLoadingError(error: Error): boolean {
   );
 }
 
-export function deepFreeze<T>(object: T): Readonly<T> {
+export function deepFreeze(object: {[x: string]: any}) {
   // Retrieve the property names defined on object
   const propNames = Object.getOwnPropertyNames(object);
   // Freeze properties before freezing self
@@ -254,5 +254,5 @@ export function deepFreeze<T>(object: T): Readonly<T> {
     object[name] = value && typeof value === 'object' ? deepFreeze(value) : value;
   }
 
-  return Object.freeze<T>(object);
+  return Object.freeze(object);
 }
