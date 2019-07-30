@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import {Project} from 'app/types/index';
 
 function arrayIsEqual(arr?: any[], other?: any[], deep?: boolean): boolean {
   // if the other array is a falsy value, return
@@ -196,11 +197,6 @@ export function extractMultilineFields(value: string): Array<string> {
     .split('\n')
     .map(f => trim(f))
     .filter(f => f !== '');
-}
-
-interface Project {
-  isBookmarked: boolean;
-  slug: string;
 }
 
 function projectDisplayCompare(a: Project, b: Project): number {
