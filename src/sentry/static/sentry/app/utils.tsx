@@ -67,7 +67,7 @@ export function objectToArray<T>(
   return Object.entries(obj);
 }
 
-export function intcomma(x: object): string {
+export function intcomma(x: number): string {
   return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
