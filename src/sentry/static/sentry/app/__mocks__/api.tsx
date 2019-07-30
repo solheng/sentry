@@ -1,4 +1,4 @@
-const RealClient = require.requireActual('app/api');
+const RealClient = jest.requireActual('app/api');
 
 export class Request {}
 
