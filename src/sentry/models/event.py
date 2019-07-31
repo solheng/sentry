@@ -430,6 +430,8 @@ class SnubaEvent(EventCommon):
     # event. If the client is planning on loading the entire event body from
     # nodestore anyway, we may as well only fetch the minimum from snuba to
     # avoid duplicated work.
+
+    # TODO: Remove this and use from eventstore
     minimal_columns = [
         'event_id',
         'group_id',
@@ -461,6 +463,7 @@ class SnubaEvent(EventCommon):
 
     __repr__ = sane_repr('project_id', 'group_id')
 
+    # TODO: Deprecate in favour of eventstore.get_event_by_id
     @classmethod
     def get_event(cls, project_id, event_id, snuba_cols=selected_columns):
         from sentry.utils import snuba
@@ -614,6 +617,7 @@ class SnubaEvent(EventCommon):
         # have to reference the row id anyway.
         return self.event_id
 
+    # TODO: Remove this and use from eventstore
     def next_event_id(self, environments=None):
         from sentry.utils import snuba
 
@@ -644,6 +648,7 @@ class SnubaEvent(EventCommon):
 
         return six.text_type(result['data'][0]['event_id'])
 
+    # TODO: Remove this and use from eventstore
     def prev_event_id(self, environments=None):
         from sentry.utils import snuba
 
