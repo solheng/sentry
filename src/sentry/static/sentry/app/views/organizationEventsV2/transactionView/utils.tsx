@@ -78,18 +78,37 @@ export const toPercent = (value: number) => {
 export type SpanBoundsType = {startTimestamp: number; endTimestamp: number};
 export type SpanGeneratedBoundsType = {start: number; end: number};
 
+const normalizeTimestamps = (spanBounds: SpanBoundsType): SpanBoundsType => {
+  const {startTimestamp, endTimestamp} = spanBounds;
+
+  if (startTimestamp > endTimestamp) {
+    return {startTimestamp: endTimestamp, endTimestamp: startTimestamp};
+  }
+
+  return spanBounds;
+};
+
 export const boundsGenerator = (bounds: {
   traceStartTimestamp: number;
   traceEndTimestamp: number;
   viewStart: number; // in [0, 1]
   viewEnd: number; // in [0, 1]
 }) => {
-  const {traceEndTimestamp, traceStartTimestamp, viewStart, viewEnd} = bounds;
+  const {viewStart, viewEnd} = bounds;
+
+  const {
+    startTimestamp: traceStartTimestamp,
+    endTimestamp: traceEndTimestamp,
+  } = normalizeTimestamps({
+    startTimestamp: bounds.traceStartTimestamp,
+    endTimestamp: bounds.traceEndTimestamp,
+  });
 
   // viewStart and viewEnd are percentage values (%) of the view window relative to the left
   // side of the trace view minimap
 
   // invariant: viewStart <= viewEnd
+  const viewWindowInvariant = viewStart <= viewEnd;
 
   // duration of the entire trace in seconds
   const duration = traceEndTimestamp - traceStartTimestamp;
@@ -99,7 +118,21 @@ export const boundsGenerator = (bounds: {
   const viewDuration = viewEndTimestamp - viewStartTimestamp;
 
   return (spanBounds: SpanBoundsType): SpanGeneratedBoundsType => {
-    const {startTimestamp, endTimestamp} = spanBounds;
+    if (!viewWindowInvariant || duration <= 0 || viewDuration <= 0) {
+      return {
+        start: 0,
+        end: 1,
+      };
+    }
+
+    const {startTimestamp, endTimestamp} = normalizeTimestamps(spanBounds);
+
+    if (endTimestamp - startTimestamp <= 0) {
+      return {
+        start: 0,
+        end: 1,
+      };
+    }
 
     const start = (startTimestamp - viewStartTimestamp) / viewDuration;
 

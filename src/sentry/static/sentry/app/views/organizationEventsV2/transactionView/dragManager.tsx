@@ -148,8 +148,7 @@ class DragManager extends React.Component<DragManagerProps, DragManagerState> {
 
     // remove listeners that were attached in onDragStart
 
-    window.removeEventListener('mousemove', this.onDragMove);
-    window.removeEventListener('mouseup', this.onDragEnd);
+    this.cleanUpListeners();
 
     // restore body styles
 
@@ -192,6 +191,13 @@ class DragManager extends React.Component<DragManagerProps, DragManagerState> {
       isDragging: false,
       currentDraggingHandle: void 0,
     });
+  };
+
+  cleanUpListeners = () => {
+    if (this.state.isDragging) {
+      window.removeEventListener('mousemove', this.onDragMove);
+      window.removeEventListener('mouseup', this.onDragEnd);
+    }
   };
 
   render() {
